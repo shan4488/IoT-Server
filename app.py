@@ -4,6 +4,7 @@ from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
+token = ''
 
 @app.route('/', methods = ['GET', 'POST'])
 def home():
@@ -11,7 +12,7 @@ def home():
 
 @app.route('/dashboard', methods = ['GET', 'POST'])
 def dashboard():
-    return render_template("Dashboard.html")
+    return render_template("Dashboard.html", token = token)
 
 
 @app.route('/signup', methods = ['GET', 'POST'])
@@ -22,7 +23,9 @@ def signup():
 
 @app.route('/signin', methods = ['GET', 'POST'])
 def signin():
-    status, username = db.check_user()
+    status, username, tempToken = db.check_user()
+    global token
+    token = tempToken
 
     data = {
         "username": username,
@@ -37,6 +40,19 @@ def signin():
 def register():
     status = db.insert_data()
     return json.dumps(status)
+
+
+# Route to handle storing device data
+@app.route('/store_device_data', methods=['POST'])
+def store_device_data():
+    status, message = db.store_device_data()
+
+    data  = {
+        "status": status,
+        "message": message
+    }
+
+    return json.dumps(data)
 
 
 if __name__ == '__main__':
